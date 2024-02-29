@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF handler</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.5rem;
+            background-color: #A0D2EB;
+          
+        }
+
+        input,
+        button {
+            font: inherit;
+            width: max-content;
+        }
+
+        form {
+            display: flex;
+            flex-flow: column nowrap;
+            gap: 1.5rem;
+        }
+        .file-import {
+        width: 100%;
+        margin: 10 auto;
+        background-color:#A0D2EB;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+      }
+      .file-import-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .file-list {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .file-list th,
+      .file-list td {
+        text-align: left;
+        padding: 8px;
+        border:1px solid #fff ;
+      }
+      .file-list th {
+        background-color: #f2f2f2;
+      }
+      .file-list tr:hover {
+        background-color: #f1f1f1;
+      }
+      .upload-btn,.delete-Btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+      }
+      .tab-content {
+  display: none; /* Start with all tab content hidden */
+}
+
+.tab-content.active {
+  display: block; /* Only show the active tab content */
+}
+
+.tab-button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px 15px;
+  background: none;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin-right: 20px;
+  border-bottom: 3px solid transparent; /* Ensures layout doesn't shift when tab becomes active */
+}
+
+.tab-button:hover {
+  background-color: #f1f1f1;
+}
+
+.tab-button.active {
+  font-weight: bold;
+  border-bottom: 3px solid blue; /* Active tab indicator */
+}
+table {
+    width: 100%; /* Make table take full width of container */
+    border-collapse: collapse; /* Collapse borders */
+    table-layout: fixed; /* Helps with even column spacing */
+}
+
+/* Table header styles */
+th {
+    background-color: #4CAF50; /* Example color */
+    color: white;
+    text-align: left;
+    font-weight: bold;
+    padding: 10px;
+}
+
+/* Table body styles */
+td {
+    padding: 8px; /* Ample padding for cell content */
+    text-align: left;
+    border-bottom: 1px solid #ddd; /* Light border for each row */
+    word-wrap: break-word; /* Ensures content wraps and doesn't overflow */
+}
+
+/* Table row styles */
+tr:hover {
+    background-color: #f5f5f5; /* Highlight row on hover */
+}
+
+/* Table cell for actions */
+.action-cell {
+    text-align: center; /* Center the action buttons or links */
+}  
+.buttonsInSearch {
+  background-color: #494D5F;
+    color: white;
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    
+}
+
+.divInSearch{
+  margin-bottom: 20px;
+}
+input{
+  background-color:  #A0D2EB;
+}
+
+    </style>
+</head>
+
+<body>
+    <h1>PDF Handler</h1>
+
+    <div class="tab-bar">
+      <button class="tab-button" onclick="openTab('upload')">Upload</button>
+      <button class="tab-button" onclick="openTab('search')">Search</button>
+    
+    </div>
+
+
+   <div id="uploadTab" class="tab-content">
+  <form id="uploadForm">
+    <input type="file" id="myFiles" accept="application/pdf" multiple />
+    <button type="submit" class="upload-btn">Submit</button>
+  </form>
+  <div class="file-import">
+    <div class="file-import-header">
+      <h2>Files</h2>
+    </div>
+    <table class="file-list">
+      <tr>
+        <th>File Name</th>
+        <th>Size</th>
+        <th>Uploaded by</th>
+        <th>Action</th>
+        <th>Top 5</th>
+      </tr>
+      
+      </table>
+    </div>
+
+
+
+    <h1>Send PDF Page Request</h1>
+    <form id="pdfForm">
+        <label for="firestoreId">Firestore ID:</label>
+        <input type="text" id="firestoreId" name="firestoreId" required><br><br>
+
+        <label for="pageNumber">Page Number:</label>
+        <input type="number" id="pageNumber" name="pageNumber" required><br><br>
+
+        <button type="submit" class="upload-btn">Get PDF Page as Image</button>
+    </form>
+  </div>
+
+
+  <div id="searchTab" class="tab-content">
+    <div class="divInSearch">
+      <label for="searchTerm">Search for word in all PDFs:</label>
+      <input class="inputInSearch" type="text" id="searchTerm" name="searchTerm" placeholder="Enter word to search">
+      <button class="buttonsInSearch" id="searchButton">Search</button>
+    </div>
+    <div class="divInSearch">
+      <label for="search4PdfById">Search for PDF by ID:</label>
+      <input class="inputInSearch"  type="text" id="search4PdfById" name="search4PdfById" placeholder="Enter PDF ID">
+      <button  class="buttonsInSearch" id="search4pdfBtn">Download PDF</button>
+    <div>
+      <div class="divInSearch">
+        <label for="search4sentences">retrieve sentences by ID:</label>
+        <input class="inputInSearch" type="text" id="search4sentences" name="search4sentences" placeholder="Enter PDF ID">
+        <button class="buttonsInSearch" id="search4sentencesBtn">Get sentences</button>
+
+
+
+    <div class="divInSearch" id="wordSearch">
+      <input class="inputInSearch" type="text" id="pdfIdInput" placeholder="Enter PDF ID">
+      <input class="inputInSearch" type="text" id="wordInput" placeholder="Enter word to search">
+      <button class="buttonsInSearch" id="searchWordBtn">Search Word</button>
+  </div>
+  <div>
+    <div class="divInSearch" id="sentencesContainer"></div>
+  </div>
+  <div id="wordSearchResults">
+      <p id="wordCount"></p>
+      <ul id="sentencesList"></ul>
+  </div>
+  </div>
+
+  
+
+    
+    
+
+    
+    
+    
+    
+    <script>
+
+      
+      const username ='rihal';
+      const password = 'Ib3tUc@nTgUes5t4iS001';
+      const headers= new Headers();
+
+      const encodedCredentials = btoa(username + ":" + password);
+      headers.set('Authorization', 'Basic ' + encodedCredentials);
+      fetch('/protected/get-files',{headers:headers})
+        .then(response => response.text())
+          .then(html => {
+          document.getElementsByClassName('file-list')[0].innerHTML = html;
+          attachDeleteListeners();
+          getTop5Words();
+
+      })
+      .catch(error => console.error('Error fetching files:', error));
+       // Function to switch between tabs
+    function openTab(tabName) {
+  // Hide all tabs
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabContents.forEach(tab => {
+        tab.style.display = 'none';
+      });
+
+  // Remove the 'active' class from all tab buttons
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+
+  // Show the selected tab content
+    document.getElementById(tabName + 'Tab').style.display = 'block';
+
+  // Add 'active' class to the tab button that was clicked
+    document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+  }
+
+// Initialize first tab as active
+openTab('upload'); 
+
+
+        const form = document.getElementById('uploadForm')
+
+        const sendFiles = async () => {
+            // Object 
+            const myFiles = document.getElementById('myFiles').files;
+
+            const formData = new FormData()
+            // key for file object, object
+            Object.keys(myFiles).forEach(key => {
+                formData.append(myFiles.item(key).name, myFiles.item(key));
+            })
+
+            const response = await fetch('http://localhost:3500/protected/upload',  {
+                headers:headers,
+                method: 'POST',
+                // the form containing pdf
+                body: formData,
+               
+            })
+
+            const json = await response.json();
+
+            
+        }
+
+        
+     
+        const searchButton = document.getElementById('searchButton');
+        searchButton.addEventListener('click', async () => {
+          const searchTerm = document.getElementById('searchTerm').value;
+          const response = await fetch(`/protected/search?searchTerm=${searchTerm}`, {headers:headers});
+          const searchResults = await response.json();
+        
+
+          alert(JSON.stringify(searchResults, null, 2));
+        // Handle search results
+        });
+
+        document.getElementById('search4pdfBtn').addEventListener('click', async () => {
+          const firestoreId = document.getElementById('search4PdfById').value;
+          if (firestoreId) {
+              window.open(`/get-pdf/${firestoreId}`, '_blank');
+          } else {
+             alert('Please enter a Firestore ID');
+          }
+        });
+    
+        form.addEventListener('submit', (e) => {
+            e.preventDefault()
+            sendFiles()
+        })
+        document.getElementById('pdfForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const firestoreId = document.getElementById('firestoreId').value;
+            const pageNumber = document.getElementById('pageNumber').value;
+
+            fetch(`/protected/pdf-page/${encodeURIComponent(firestoreId)}/${pageNumber}`, {headers:headers})
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Display the image blob or create a link to download it
+                    const imageUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href= imageUrl;
+                    link.download=`${firestoreId}_page_${pageNumber}`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
+        });
+        
+
+        // deleting a pdf
+        function attachDeleteListeners() {
+          document.querySelectorAll('.delete-Btn').forEach(button => {
+          button.addEventListener('click', function() {
+          const docId = this.getAttribute('data-doc-id');
+          const filePath = this.getAttribute('data-file-path');
+          fetch('/protected/delete-pdf', {
+            headers:{
+              'Authorization': `Basic ${encodedCredentials}`,
+              'Content-Type': 'application/json'
+            },
+            method: 'POST',
+           
+           body: JSON.stringify({ docId, filePath }),
+          
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log(data.message);
+          this.closest('tr').remove();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      });
+    });
+  }
+
+
+  function getTop5Words(){
+    document.querySelectorAll('.top5-Btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const firestoreId = this.getAttribute('data-doc-id');
+        fetch(`/protected/get-top-words/${firestoreId}`, {headers:headers})
+        .then(response => {
+          if (!response.ok){
+            throw new Error('Network response was not ok');
+          }
+          return response.json()
+        })
+        .then(data => {
+          const topWordsList = document.getElementById('topWordsList');
+          topWordsList.innerHTML='';
+          data.topWords.forEach(word => {
+            const li = document.createElement('li');
+            li.textContent= word;
+
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching top Words', error);
+        })
+
+        
+
+      })
+    })
+  }
+
+  document.getElementById('search4sentencesBtn').addEventListener('click', async () => {
+    const pdfId = document.getElementById('search4sentences').value;
+    if (pdfId) {
+        try {
+            const response = await fetch(`/protected/get-sentences/${pdfId}`, {headers:headers});
+            const sentences = await response.json();
+
+            const container = document.getElementById('sentencesContainer');
+            container.innerHTML = ''; // Clear previous content
+            sentences.forEach(sentence => {
+                const p = document.createElement('p');
+                p.textContent = sentence;
+                container.appendChild(p);
+            });
+        } catch (error) {
+            console.error('Error fetching sentences:', error);
+        }
+    } else {
+        alert('Please enter a PDF ID');
+    }
+});
+
+document.getElementById('searchWordBtn').addEventListener('click', async () => {
+    const pdfId = document.getElementById('pdfIdInput').value;
+    const word = document.getElementById('wordInput').value;
+    
+    if (pdfId && word) {
+        try {
+            const response = await fetch(`/protected/search-word/${pdfId}/${word}`, {headers:headers});
+            const result = await response.json();
+
+            document.getElementById('wordCount').textContent = `Word count: ${result.wordCount}`;
+            const sentencesList = document.getElementById('sentencesList');
+            sentencesList.innerHTML = ''; // Clear previous content
+            
+            result.sentencesWithWord.forEach(sentence => {
+                const li = document.createElement('li');
+                li.textContent = sentence;
+                sentencesList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error searching word:', error);
+        }
+    } else {
+        alert('Please enter a PDF ID and a word to search');
+    }
+});
+       
+
+    </script>
+</body>
+
+</html>
